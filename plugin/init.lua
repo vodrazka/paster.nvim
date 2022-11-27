@@ -2,10 +2,9 @@ require "io"
 
 --receive part
 function parseCroc(where)
-    print(where)
     vim.cmd('au! croc')
-    vim.cmd('tabp')
-    vim.cmd("'<,'>!cat "..where) --todo check if selection or whole file
+    vim.cmd('tabc')
+    vim.cmd("'<,'>!cat "..where..";rm "..where) --todo check if selection or whole file
 end
 function startPasterReceive(args)
     where = args.args
@@ -26,9 +25,13 @@ function send(content,where)
         io.write(v,'\n')
     end
     io.close(file)
-    local cmd = "croc send --code "..where.." "..where
+    local cmd = "croc send --code "..where.." "..where..";rm "..where
+    vim.cmd('augroup croc_send | exe "au TermClose * lua endSend()" | augroup END')
     vim.cmd('tabnew | term '..cmd)
-    -- vim.cmd('tabp')
+end
+function endSend()
+    vim.cmd('au! croc_send')
+    vim.cmd('tabc')
 end
 function startPaster(args)
     if args.range == 0 then
